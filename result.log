@@ -1,0 +1,3182 @@
+============================= test session starts ==============================
+platform linux -- Python 3.6.5, pytest-3.5.1, py-1.5.3, pluggy-0.6.0
+rootdir: /home/harold/Documents/en_prod/To-Do_list, inifile:
+plugins: openfiles-0.3.0, remotedata-0.2.1, arraydiff-0.2, doctestplus-0.1.3
+collected 4 items
+
+test_api.py EEEE                                                         [100%]
+
+==================================== ERRORS ====================================
+______________________ ERROR at setup of test_create_task ______________________
+
+self = Engine(mysql+pymysql://user:***@localhost/test_db?charset=utf8)
+fn = <bound method Pool.connect of <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d777b588>>
+connection = None
+
+    def _wrap_pool_connect(self, fn, connection):
+        dialect = self.dialect
+        try:
+>           return fn()
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3371: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d777b588>
+
+    def connect(self):
+        """Return a DBAPI connection from the pool.
+    
+            The connection is instrumented such that when its
+            ``close()`` method is called, the connection will be returned to
+            the pool.
+    
+            """
+>       return _ConnectionFairy._checkout(self)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:327: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'sqlalchemy.pool.base._ConnectionFairy'>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d777b588>
+threadconns = None, fairy = None
+
+    @classmethod
+    def _checkout(cls, pool, threadconns=None, fairy=None):
+        if not fairy:
+>           fairy = _ConnectionRecord.checkout(pool)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:894: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'sqlalchemy.pool.base._ConnectionRecord'>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d777b588>
+
+    @classmethod
+    def checkout(cls, pool):
+>       rec = pool._do_get()
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:493: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d777b588>
+
+    def _do_get(self):
+        use_overflow = self._max_overflow > -1
+    
+        try:
+            wait = use_overflow and self._overflow >= self._max_overflow
+            return self._pool.get(wait, self._timeout)
+        except sqla_queue.Empty:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
+                return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %0.2f"
+                    % (self.size(), self.overflow(), self._timeout),
+                    code="3o7r",
+                )
+    
+        if self._inc_overflow():
+            try:
+                return self._create_connection()
+            except:
+                with util.safe_reraise():
+>                   self._dec_overflow()
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/impl.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.util.langhelpers.safe_reraise object at 0x7fe6d76ddcf8>
+type_ = None, value = None, traceback = None
+
+    def __exit__(self, type_, value, traceback):
+        # see #2703 for notes
+        if type_ is None:
+            exc_type, exc_value, exc_tb = self._exc_info
+            self._exc_info = None  # remove potential circular references
+            if not self.warn_only:
+                compat.raise_(
+                    exc_value,
+>                   with_traceback=exc_tb,
+                )
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/langhelpers.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def raise_(
+        exception, with_traceback=None, replace_context=None, from_=False
+    ):
+        r"""implement "raise" with cause support.
+    
+            :param exception: exception to raise
+            :param with_traceback: will call exception.with_traceback()
+            :param replace_context: an as-yet-unsupported feature.  This is
+             an exception object which we are "replacing", e.g., it's our
+             "cause" but we don't want it printed.    Basically just what
+             ``__suppress_context__`` does but we don't want to suppress
+             the enclosing context, if any.  So for now we make it the
+             cause.
+            :param from\_: the cause.  this actually sets the cause and doesn't
+             hope to hide it someday.
+    
+            """
+        if with_traceback is not None:
+            exception = exception.with_traceback(with_traceback)
+    
+        if from_ is not False:
+            exception.__cause__ = from_
+        elif replace_context is not None:
+            # no good solution here, we would like to have the exception
+            # have only the context of replace_context.__context__ so that the
+            # intermediary exception does not change, but we can't figure
+            # that out.
+            exception.__cause__ = replace_context
+    
+        try:
+>           raise exception
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/compat.py:211: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d777b588>
+
+    def _do_get(self):
+        use_overflow = self._max_overflow > -1
+    
+        try:
+            wait = use_overflow and self._overflow >= self._max_overflow
+            return self._pool.get(wait, self._timeout)
+        except sqla_queue.Empty:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
+                return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %0.2f"
+                    % (self.size(), self.overflow(), self._timeout),
+                    code="3o7r",
+                )
+    
+        if self._inc_overflow():
+            try:
+>               return self._create_connection()
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/impl.py:143: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d777b588>
+
+    def _create_connection(self):
+        """Called by subclasses to create a new ConnectionRecord."""
+    
+>       return _ConnectionRecord(self)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:273: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe6d76ddba8>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d777b588>, connect = True
+
+    def __init__(self, pool, connect=True):
+        self.__pool = pool
+        if connect:
+>           self.__connect()
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe6d76ddba8>
+
+    def __connect(self):
+        pool = self.__pool
+    
+        # ensure any existing connection is removed, so that if
+        # creator fails, this attribute stays None
+        self.dbapi_connection = None
+        try:
+            self.starttime = time.time()
+            self.dbapi_connection = connection = pool._invoke_creator(self)
+            pool.logger.debug("Created new connection %r", connection)
+            self.fresh = True
+        except BaseException as e:
+            with util.safe_reraise():
+>               pool.logger.debug("Error on connect(): %s", e)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:691: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.util.langhelpers.safe_reraise object at 0x7fe6d76ddc50>
+type_ = None, value = None, traceback = None
+
+    def __exit__(self, type_, value, traceback):
+        # see #2703 for notes
+        if type_ is None:
+            exc_type, exc_value, exc_tb = self._exc_info
+            self._exc_info = None  # remove potential circular references
+            if not self.warn_only:
+                compat.raise_(
+                    exc_value,
+>                   with_traceback=exc_tb,
+                )
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/langhelpers.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def raise_(
+        exception, with_traceback=None, replace_context=None, from_=False
+    ):
+        r"""implement "raise" with cause support.
+    
+            :param exception: exception to raise
+            :param with_traceback: will call exception.with_traceback()
+            :param replace_context: an as-yet-unsupported feature.  This is
+             an exception object which we are "replacing", e.g., it's our
+             "cause" but we don't want it printed.    Basically just what
+             ``__suppress_context__`` does but we don't want to suppress
+             the enclosing context, if any.  So for now we make it the
+             cause.
+            :param from\_: the cause.  this actually sets the cause and doesn't
+             hope to hide it someday.
+    
+            """
+        if with_traceback is not None:
+            exception = exception.with_traceback(with_traceback)
+    
+        if from_ is not False:
+            exception.__cause__ = from_
+        elif replace_context is not None:
+            # no good solution here, we would like to have the exception
+            # have only the context of replace_context.__context__ so that the
+            # intermediary exception does not change, but we can't figure
+            # that out.
+            exception.__cause__ = replace_context
+    
+        try:
+>           raise exception
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/compat.py:211: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe6d76ddba8>
+
+    def __connect(self):
+        pool = self.__pool
+    
+        # ensure any existing connection is removed, so that if
+        # creator fails, this attribute stays None
+        self.dbapi_connection = None
+        try:
+            self.starttime = time.time()
+>           self.dbapi_connection = connection = pool._invoke_creator(self)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:686: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection_record = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe6d76ddba8>
+
+    def connect(connection_record=None):
+        if dialect._has_events:
+            for fn in dialect.dispatch.do_connect:
+                connection = fn(dialect, connection_record, cargs, cparams)
+                if connection is not None:
+                    return connection
+>       return dialect.connect(*cargs, **cparams)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/create.py:574: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.dialects.mysql.pymysql.MySQLDialect_pymysql object at 0x7fe6d77dd390>
+cargs = ()
+cparams = {'charset': 'utf8', 'client_flag': 2, 'database': 'test_db', 'host': 'localhost', ...}
+
+    def connect(self, *cargs, **cparams):
+        # inherits the docstring from interfaces.Dialect.connect
+>       return self.dbapi.connect(*cargs, **cparams)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/default.py:598: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pymysql.connections.Connection object at 0x7fe6d76ddbe0>
+
+    def __init__(
+        self,
+        *,
+        user=None,  # The first four arguments is based on DB-API 2.0 recommendation.
+        password="",
+        host=None,
+        database=None,
+        unix_socket=None,
+        port=0,
+        charset="",
+        sql_mode=None,
+        read_default_file=None,
+        conv=None,
+        use_unicode=True,
+        client_flag=0,
+        cursorclass=Cursor,
+        init_command=None,
+        connect_timeout=10,
+        read_default_group=None,
+        autocommit=False,
+        local_infile=False,
+        max_allowed_packet=16 * 1024 * 1024,
+        defer_connect=False,
+        auth_plugin_map=None,
+        read_timeout=None,
+        write_timeout=None,
+        bind_address=None,
+        binary_prefix=False,
+        program_name=None,
+        server_public_key=None,
+        ssl=None,
+        ssl_ca=None,
+        ssl_cert=None,
+        ssl_disabled=None,
+        ssl_key=None,
+        ssl_verify_cert=None,
+        ssl_verify_identity=None,
+        compress=None,  # not supported
+        named_pipe=None,  # not supported
+        passwd=None,  # deprecated
+        db=None,  # deprecated
+    ):
+        if db is not None and database is None:
+            # We will raise warining in 2022 or later.
+            # See https://github.com/PyMySQL/PyMySQL/issues/939
+            # warnings.warn("'db' is deprecated, use 'database'", DeprecationWarning, 3)
+            database = db
+        if passwd is not None and not password:
+            # We will raise warining in 2022 or later.
+            # See https://github.com/PyMySQL/PyMySQL/issues/939
+            # warnings.warn(
+            #    "'passwd' is deprecated, use 'password'", DeprecationWarning, 3
+            # )
+            password = passwd
+    
+        if compress or named_pipe:
+            raise NotImplementedError(
+                "compress and named_pipe arguments are not supported"
+            )
+    
+        self._local_infile = bool(local_infile)
+        if self._local_infile:
+            client_flag |= CLIENT.LOCAL_FILES
+    
+        if read_default_group and not read_default_file:
+            if sys.platform.startswith("win"):
+                read_default_file = "c:\\my.ini"
+            else:
+                read_default_file = "/etc/my.cnf"
+    
+        if read_default_file:
+            if not read_default_group:
+                read_default_group = "client"
+    
+            cfg = Parser()
+            cfg.read(os.path.expanduser(read_default_file))
+    
+            def _config(key, arg):
+                if arg:
+                    return arg
+                try:
+                    return cfg.get(read_default_group, key)
+                except Exception:
+                    return arg
+    
+            user = _config("user", user)
+            password = _config("password", password)
+            host = _config("host", host)
+            database = _config("database", database)
+            unix_socket = _config("socket", unix_socket)
+            port = int(_config("port", port))
+            bind_address = _config("bind-address", bind_address)
+            charset = _config("default-character-set", charset)
+            if not ssl:
+                ssl = {}
+            if isinstance(ssl, dict):
+                for key in ["ca", "capath", "cert", "key", "cipher"]:
+                    value = _config("ssl-" + key, ssl.get(key))
+                    if value:
+                        ssl[key] = value
+    
+        self.ssl = False
+        if not ssl_disabled:
+            if ssl_ca or ssl_cert or ssl_key or ssl_verify_cert or ssl_verify_identity:
+                ssl = {
+                    "ca": ssl_ca,
+                    "check_hostname": bool(ssl_verify_identity),
+                    "verify_mode": ssl_verify_cert
+                    if ssl_verify_cert is not None
+                    else False,
+                }
+                if ssl_cert is not None:
+                    ssl["cert"] = ssl_cert
+                if ssl_key is not None:
+                    ssl["key"] = ssl_key
+            if ssl:
+                if not SSL_ENABLED:
+                    raise NotImplementedError("ssl module not found")
+                self.ssl = True
+                client_flag |= CLIENT.SSL
+                self.ctx = self._create_ssl_ctx(ssl)
+    
+        self.host = host or "localhost"
+        self.port = port or 3306
+        if type(self.port) is not int:
+            raise ValueError("port should be of type int")
+        self.user = user or DEFAULT_USER
+        self.password = password or b""
+        if isinstance(self.password, str):
+            self.password = self.password.encode("latin1")
+        self.db = database
+        self.unix_socket = unix_socket
+        self.bind_address = bind_address
+        if not (0 < connect_timeout <= 31536000):
+            raise ValueError("connect_timeout should be >0 and <=31536000")
+        self.connect_timeout = connect_timeout or None
+        if read_timeout is not None and read_timeout <= 0:
+            raise ValueError("read_timeout should be > 0")
+        self._read_timeout = read_timeout
+        if write_timeout is not None and write_timeout <= 0:
+            raise ValueError("write_timeout should be > 0")
+        self._write_timeout = write_timeout
+    
+        self.charset = charset or DEFAULT_CHARSET
+        self.use_unicode = use_unicode
+    
+        self.encoding = charset_by_name(self.charset).encoding
+    
+        client_flag |= CLIENT.CAPABILITIES
+        if self.db:
+            client_flag |= CLIENT.CONNECT_WITH_DB
+    
+        self.client_flag = client_flag
+    
+        self.cursorclass = cursorclass
+    
+        self._result = None
+        self._affected_rows = 0
+        self.host_info = "Not connected"
+    
+        # specified autocommit mode. None means use server default.
+        self.autocommit_mode = autocommit
+    
+        if conv is None:
+            conv = converters.conversions
+    
+        # Need for MySQLdb compatibility.
+        self.encoders = {k: v for (k, v) in conv.items() if type(k) is not int}
+        self.decoders = {k: v for (k, v) in conv.items() if type(k) is int}
+        self.sql_mode = sql_mode
+        self.init_command = init_command
+        self.max_allowed_packet = max_allowed_packet
+        self._auth_plugin_map = auth_plugin_map or {}
+        self._binary_prefix = binary_prefix
+        self.server_public_key = server_public_key
+    
+        self._connect_attrs = {
+            "_client_name": "pymysql",
+            "_pid": str(os.getpid()),
+            "_client_version": VERSION_STRING,
+        }
+    
+        if program_name:
+            self._connect_attrs["program_name"] = program_name
+    
+        if defer_connect:
+            self._sock = None
+        else:
+>           self.connect()
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:353: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pymysql.connections.Connection object at 0x7fe6d76ddbe0>
+sock = <socket.socket [closed] fd=-1, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=6>
+
+    def connect(self, sock=None):
+        self._closed = False
+        try:
+            if sock is None:
+                if self.unix_socket:
+                    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                    sock.settimeout(self.connect_timeout)
+                    sock.connect(self.unix_socket)
+                    self.host_info = "Localhost via UNIX socket"
+                    self._secure = True
+                    if DEBUG:
+                        print("connected using unix_socket")
+                else:
+                    kwargs = {}
+                    if self.bind_address is not None:
+                        kwargs["source_address"] = (self.bind_address, 0)
+                    while True:
+                        try:
+                            sock = socket.create_connection(
+                                (self.host, self.port), self.connect_timeout, **kwargs
+                            )
+                            break
+                        except (OSError, IOError) as e:
+                            if e.errno == errno.EINTR:
+                                continue
+                            raise
+                    self.host_info = "socket %s:%d" % (self.host, self.port)
+                    if DEBUG:
+                        print("connected using socket")
+                    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+                sock.settimeout(None)
+    
+            self._sock = sock
+            self._rfile = sock.makefile("rb")
+            self._next_seq_id = 0
+    
+            self._get_server_information()
+>           self._request_authentication()
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:633: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pymysql.connections.Connection object at 0x7fe6d76ddbe0>
+
+    def _request_authentication(self):
+        # https://dev.mysql.com/doc/internals/en/connection-phase-packets.html#packet-Protocol::HandshakeResponse
+        if int(self.server_version.split(".", 1)[0]) >= 5:
+            self.client_flag |= CLIENT.MULTI_RESULTS
+    
+        if self.user is None:
+            raise ValueError("Did not specify a username")
+    
+        charset_id = charset_by_name(self.charset).id
+        if isinstance(self.user, str):
+            self.user = self.user.encode(self.encoding)
+    
+        data_init = struct.pack(
+            "<iIB23s", self.client_flag, MAX_PACKET_LEN, charset_id, b""
+        )
+    
+        if self.ssl and self.server_capabilities & CLIENT.SSL:
+            self.write_packet(data_init)
+    
+            self._sock = self.ctx.wrap_socket(self._sock, server_hostname=self.host)
+            self._rfile = self._sock.makefile("rb")
+            self._secure = True
+    
+        data = data_init + self.user + b"\0"
+    
+        authresp = b""
+        plugin_name = None
+    
+        if self._auth_plugin_name == "":
+            plugin_name = b""
+            authresp = _auth.scramble_native_password(self.password, self.salt)
+        elif self._auth_plugin_name == "mysql_native_password":
+            plugin_name = b"mysql_native_password"
+            authresp = _auth.scramble_native_password(self.password, self.salt)
+        elif self._auth_plugin_name == "caching_sha2_password":
+            plugin_name = b"caching_sha2_password"
+            if self.password:
+                if DEBUG:
+                    print("caching_sha2: trying fast path")
+                authresp = _auth.scramble_caching_sha2(self.password, self.salt)
+            else:
+                if DEBUG:
+                    print("caching_sha2: empty password")
+        elif self._auth_plugin_name == "sha256_password":
+            plugin_name = b"sha256_password"
+            if self.ssl and self.server_capabilities & CLIENT.SSL:
+                authresp = self.password + b"\0"
+            elif self.password:
+                authresp = b"\1"  # request public key
+            else:
+                authresp = b"\0"  # empty password
+    
+        if self.server_capabilities & CLIENT.PLUGIN_AUTH_LENENC_CLIENT_DATA:
+            data += _lenenc_int(len(authresp)) + authresp
+        elif self.server_capabilities & CLIENT.SECURE_CONNECTION:
+            data += struct.pack("B", len(authresp)) + authresp
+        else:  # pragma: no cover - not testing against servers without secure auth (>=5.0)
+            data += authresp + b"\0"
+    
+        if self.db and self.server_capabilities & CLIENT.CONNECT_WITH_DB:
+            if isinstance(self.db, str):
+                self.db = self.db.encode(self.encoding)
+            data += self.db + b"\0"
+    
+        if self.server_capabilities & CLIENT.PLUGIN_AUTH:
+            data += (plugin_name or b"") + b"\0"
+    
+        if self.server_capabilities & CLIENT.CONNECT_ATTRS:
+            connect_attrs = b""
+            for k, v in self._connect_attrs.items():
+                k = k.encode("utf-8")
+                connect_attrs += struct.pack("B", len(k)) + k
+                v = v.encode("utf-8")
+                connect_attrs += struct.pack("B", len(v)) + v
+            data += struct.pack("B", len(connect_attrs)) + connect_attrs
+    
+        self.write_packet(data)
+>       auth_packet = self._read_packet()
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:907: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pymysql.connections.Connection object at 0x7fe6d76ddbe0>
+packet_type = <class 'pymysql.protocol.MysqlPacket'>
+
+    def _read_packet(self, packet_type=MysqlPacket):
+        """Read an entire "mysql packet" in its entirety from the network
+            and return a MysqlPacket type that represents the results.
+    
+            :raise OperationalError: If the connection to the MySQL server is lost.
+            :raise InternalError: If the packet sequence number is wrong.
+            """
+        buff = bytearray()
+        while True:
+            packet_header = self._read_bytes(4)
+            # if DEBUG: dump_packet(packet_header)
+    
+            btrl, btrh, packet_number = struct.unpack("<HBB", packet_header)
+            bytes_to_read = btrl + (btrh << 16)
+            if packet_number != self._next_seq_id:
+                self._force_close()
+                if packet_number == 0:
+                    # MariaDB sends error packet with seqno==0 when shutdown
+                    raise err.OperationalError(
+                        CR.CR_SERVER_LOST,
+                        "Lost connection to MySQL server during query",
+                    )
+                raise err.InternalError(
+                    "Packet sequence number wrong - got %d expected %d"
+                    % (packet_number, self._next_seq_id)
+                )
+            self._next_seq_id = (self._next_seq_id + 1) % 256
+    
+            recv_data = self._read_bytes(bytes_to_read)
+            if DEBUG:
+                dump_packet(recv_data)
+            buff += recv_data
+            # https://dev.mysql.com/doc/internals/en/sending-more-than-16mbyte.html
+            if bytes_to_read == 0xFFFFFF:
+                continue
+            if bytes_to_read < MAX_PACKET_LEN:
+                break
+    
+        packet = packet_type(bytes(buff), self.encoding)
+        if packet.is_error_packet():
+            if self._result is not None and self._result.unbuffered_active is True:
+                self._result.unbuffered_active = False
+>           packet.raise_for_error()
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:725: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pymysql.protocol.MysqlPacket object at 0x7fe6d76dde80>
+
+    def raise_for_error(self):
+        self.rewind()
+        self.advance(1)  # field_count == error (we already know that)
+        errno = self.read_uint16()
+        if DEBUG:
+            print("errno =", errno)
+>       err.raise_mysql_exception(self._data)
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/protocol.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+data = b"\xff\xa2\x06#28000Access denied for user 'user'@'localhost'"
+
+    def raise_mysql_exception(data):
+        errno = struct.unpack("<h", data[1:3])[0]
+        errval = data[9:].decode("utf-8", "replace")
+        errorclass = error_map.get(errno)
+        if errorclass is None:
+            errorclass = InternalError if errno < 1000 else OperationalError
+>       raise errorclass(errno, errval)
+E       pymysql.err.OperationalError: (1698, "Access denied for user 'user'@'localhost'")
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/err.py:143: OperationalError
+
+The above exception was the direct cause of the following exception:
+
+    @pytest.fixture
+    def app():
+        app = create_app()
+        app.config['TESTING'] = True
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://user:password@localhost/test_db'
+    
+        with app.app_context():
+>           db.create_all()  # Créer les tables dans la base de données de test
+
+test_api.py:13: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/lib/python3.6/site-packages/flask_sqlalchemy/__init__.py:1094: in create_all
+    self._execute_for_all_tables(app, bind, 'create_all')
+../../../anaconda3/lib/python3.6/site-packages/flask_sqlalchemy/__init__.py:1086: in _execute_for_all_tables
+    op(bind=self.get_engine(app, bind), **extra)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/sql/schema.py:4931: in create_all
+    ddl.SchemaGenerator, self, checkfirst=checkfirst, tables=tables
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3237: in _run_ddl_visitor
+    with self.begin() as conn:
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3153: in begin
+    conn = self.connect(close_with_result=close_with_result)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3325: in connect
+    return self._connection_cls(self, close_with_result=close_with_result)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:96: in __init__
+    else engine.raw_connection()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3404: in raw_connection
+    return self._wrap_pool_connect(self.pool.connect, _connection)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3375: in _wrap_pool_connect
+    e, dialect, self
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:2209: in _handle_dbapi_exception_noconnection
+    sqlalchemy_exception, with_traceback=exc_info[2], from_=e
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/compat.py:211: in raise_
+    raise exception
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3371: in _wrap_pool_connect
+    return fn()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:327: in connect
+    return _ConnectionFairy._checkout(self)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:894: in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:493: in checkout
+    rec = pool._do_get()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/impl.py:146: in _do_get
+    self._dec_overflow()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/langhelpers.py:72: in __exit__
+    with_traceback=exc_tb,
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/compat.py:211: in raise_
+    raise exception
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/impl.py:143: in _do_get
+    return self._create_connection()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:273: in _create_connection
+    return _ConnectionRecord(self)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:388: in __init__
+    self.__connect()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:691: in __connect
+    pool.logger.debug("Error on connect(): %s", e)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/langhelpers.py:72: in __exit__
+    with_traceback=exc_tb,
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/compat.py:211: in raise_
+    raise exception
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:686: in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/create.py:574: in connect
+    return dialect.connect(*cargs, **cparams)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/default.py:598: in connect
+    return self.dbapi.connect(*cargs, **cparams)
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:353: in __init__
+    self.connect()
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:633: in connect
+    self._request_authentication()
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:907: in _request_authentication
+    auth_packet = self._read_packet()
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:725: in _read_packet
+    packet.raise_for_error()
+../../../anaconda3/lib/python3.6/site-packages/pymysql/protocol.py:221: in raise_for_error
+    err.raise_mysql_exception(self._data)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+data = b"\xff\xa2\x06#28000Access denied for user 'user'@'localhost'"
+
+    def raise_mysql_exception(data):
+        errno = struct.unpack("<h", data[1:3])[0]
+        errval = data[9:].decode("utf-8", "replace")
+        errorclass = error_map.get(errno)
+        if errorclass is None:
+            errorclass = InternalError if errno < 1000 else OperationalError
+>       raise errorclass(errno, errval)
+E       sqlalchemy.exc.OperationalError: (pymysql.err.OperationalError) (1698, "Access denied for user 'user'@'localhost'")
+E       (Background on this error at: https://sqlalche.me/e/14/e3q8)
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/err.py:143: OperationalError
+_______________________ ERROR at setup of test_get_tasks _______________________
+
+self = Engine(mysql+pymysql://user:***@localhost/test_db?charset=utf8)
+fn = <bound method Pool.connect of <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d9abac18>>
+connection = None
+
+    def _wrap_pool_connect(self, fn, connection):
+        dialect = self.dialect
+        try:
+>           return fn()
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3371: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d9abac18>
+
+    def connect(self):
+        """Return a DBAPI connection from the pool.
+    
+            The connection is instrumented such that when its
+            ``close()`` method is called, the connection will be returned to
+            the pool.
+    
+            """
+>       return _ConnectionFairy._checkout(self)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:327: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'sqlalchemy.pool.base._ConnectionFairy'>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d9abac18>
+threadconns = None, fairy = None
+
+    @classmethod
+    def _checkout(cls, pool, threadconns=None, fairy=None):
+        if not fairy:
+>           fairy = _ConnectionRecord.checkout(pool)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:894: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'sqlalchemy.pool.base._ConnectionRecord'>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d9abac18>
+
+    @classmethod
+    def checkout(cls, pool):
+>       rec = pool._do_get()
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:493: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d9abac18>
+
+    def _do_get(self):
+        use_overflow = self._max_overflow > -1
+    
+        try:
+            wait = use_overflow and self._overflow >= self._max_overflow
+            return self._pool.get(wait, self._timeout)
+        except sqla_queue.Empty:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
+                return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %0.2f"
+                    % (self.size(), self.overflow(), self._timeout),
+                    code="3o7r",
+                )
+    
+        if self._inc_overflow():
+            try:
+                return self._create_connection()
+            except:
+                with util.safe_reraise():
+>                   self._dec_overflow()
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/impl.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.util.langhelpers.safe_reraise object at 0x7fe6d6888898>
+type_ = None, value = None, traceback = None
+
+    def __exit__(self, type_, value, traceback):
+        # see #2703 for notes
+        if type_ is None:
+            exc_type, exc_value, exc_tb = self._exc_info
+            self._exc_info = None  # remove potential circular references
+            if not self.warn_only:
+                compat.raise_(
+                    exc_value,
+>                   with_traceback=exc_tb,
+                )
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/langhelpers.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def raise_(
+        exception, with_traceback=None, replace_context=None, from_=False
+    ):
+        r"""implement "raise" with cause support.
+    
+            :param exception: exception to raise
+            :param with_traceback: will call exception.with_traceback()
+            :param replace_context: an as-yet-unsupported feature.  This is
+             an exception object which we are "replacing", e.g., it's our
+             "cause" but we don't want it printed.    Basically just what
+             ``__suppress_context__`` does but we don't want to suppress
+             the enclosing context, if any.  So for now we make it the
+             cause.
+            :param from\_: the cause.  this actually sets the cause and doesn't
+             hope to hide it someday.
+    
+            """
+        if with_traceback is not None:
+            exception = exception.with_traceback(with_traceback)
+    
+        if from_ is not False:
+            exception.__cause__ = from_
+        elif replace_context is not None:
+            # no good solution here, we would like to have the exception
+            # have only the context of replace_context.__context__ so that the
+            # intermediary exception does not change, but we can't figure
+            # that out.
+            exception.__cause__ = replace_context
+    
+        try:
+>           raise exception
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/compat.py:211: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d9abac18>
+
+    def _do_get(self):
+        use_overflow = self._max_overflow > -1
+    
+        try:
+            wait = use_overflow and self._overflow >= self._max_overflow
+            return self._pool.get(wait, self._timeout)
+        except sqla_queue.Empty:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
+                return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %0.2f"
+                    % (self.size(), self.overflow(), self._timeout),
+                    code="3o7r",
+                )
+    
+        if self._inc_overflow():
+            try:
+>               return self._create_connection()
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/impl.py:143: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d9abac18>
+
+    def _create_connection(self):
+        """Called by subclasses to create a new ConnectionRecord."""
+    
+>       return _ConnectionRecord(self)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:273: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe6d6888128>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d9abac18>, connect = True
+
+    def __init__(self, pool, connect=True):
+        self.__pool = pool
+        if connect:
+>           self.__connect()
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe6d6888128>
+
+    def __connect(self):
+        pool = self.__pool
+    
+        # ensure any existing connection is removed, so that if
+        # creator fails, this attribute stays None
+        self.dbapi_connection = None
+        try:
+            self.starttime = time.time()
+            self.dbapi_connection = connection = pool._invoke_creator(self)
+            pool.logger.debug("Created new connection %r", connection)
+            self.fresh = True
+        except BaseException as e:
+            with util.safe_reraise():
+>               pool.logger.debug("Error on connect(): %s", e)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:691: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.util.langhelpers.safe_reraise object at 0x7fe6d6888358>
+type_ = None, value = None, traceback = None
+
+    def __exit__(self, type_, value, traceback):
+        # see #2703 for notes
+        if type_ is None:
+            exc_type, exc_value, exc_tb = self._exc_info
+            self._exc_info = None  # remove potential circular references
+            if not self.warn_only:
+                compat.raise_(
+                    exc_value,
+>                   with_traceback=exc_tb,
+                )
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/langhelpers.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def raise_(
+        exception, with_traceback=None, replace_context=None, from_=False
+    ):
+        r"""implement "raise" with cause support.
+    
+            :param exception: exception to raise
+            :param with_traceback: will call exception.with_traceback()
+            :param replace_context: an as-yet-unsupported feature.  This is
+             an exception object which we are "replacing", e.g., it's our
+             "cause" but we don't want it printed.    Basically just what
+             ``__suppress_context__`` does but we don't want to suppress
+             the enclosing context, if any.  So for now we make it the
+             cause.
+            :param from\_: the cause.  this actually sets the cause and doesn't
+             hope to hide it someday.
+    
+            """
+        if with_traceback is not None:
+            exception = exception.with_traceback(with_traceback)
+    
+        if from_ is not False:
+            exception.__cause__ = from_
+        elif replace_context is not None:
+            # no good solution here, we would like to have the exception
+            # have only the context of replace_context.__context__ so that the
+            # intermediary exception does not change, but we can't figure
+            # that out.
+            exception.__cause__ = replace_context
+    
+        try:
+>           raise exception
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/compat.py:211: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe6d6888128>
+
+    def __connect(self):
+        pool = self.__pool
+    
+        # ensure any existing connection is removed, so that if
+        # creator fails, this attribute stays None
+        self.dbapi_connection = None
+        try:
+            self.starttime = time.time()
+>           self.dbapi_connection = connection = pool._invoke_creator(self)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:686: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection_record = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe6d6888128>
+
+    def connect(connection_record=None):
+        if dialect._has_events:
+            for fn in dialect.dispatch.do_connect:
+                connection = fn(dialect, connection_record, cargs, cparams)
+                if connection is not None:
+                    return connection
+>       return dialect.connect(*cargs, **cparams)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/create.py:574: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.dialects.mysql.pymysql.MySQLDialect_pymysql object at 0x7fe6da9b2390>
+cargs = ()
+cparams = {'charset': 'utf8', 'client_flag': 2, 'database': 'test_db', 'host': 'localhost', ...}
+
+    def connect(self, *cargs, **cparams):
+        # inherits the docstring from interfaces.Dialect.connect
+>       return self.dbapi.connect(*cargs, **cparams)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/default.py:598: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pymysql.connections.Connection object at 0x7fe6d68889e8>
+
+    def __init__(
+        self,
+        *,
+        user=None,  # The first four arguments is based on DB-API 2.0 recommendation.
+        password="",
+        host=None,
+        database=None,
+        unix_socket=None,
+        port=0,
+        charset="",
+        sql_mode=None,
+        read_default_file=None,
+        conv=None,
+        use_unicode=True,
+        client_flag=0,
+        cursorclass=Cursor,
+        init_command=None,
+        connect_timeout=10,
+        read_default_group=None,
+        autocommit=False,
+        local_infile=False,
+        max_allowed_packet=16 * 1024 * 1024,
+        defer_connect=False,
+        auth_plugin_map=None,
+        read_timeout=None,
+        write_timeout=None,
+        bind_address=None,
+        binary_prefix=False,
+        program_name=None,
+        server_public_key=None,
+        ssl=None,
+        ssl_ca=None,
+        ssl_cert=None,
+        ssl_disabled=None,
+        ssl_key=None,
+        ssl_verify_cert=None,
+        ssl_verify_identity=None,
+        compress=None,  # not supported
+        named_pipe=None,  # not supported
+        passwd=None,  # deprecated
+        db=None,  # deprecated
+    ):
+        if db is not None and database is None:
+            # We will raise warining in 2022 or later.
+            # See https://github.com/PyMySQL/PyMySQL/issues/939
+            # warnings.warn("'db' is deprecated, use 'database'", DeprecationWarning, 3)
+            database = db
+        if passwd is not None and not password:
+            # We will raise warining in 2022 or later.
+            # See https://github.com/PyMySQL/PyMySQL/issues/939
+            # warnings.warn(
+            #    "'passwd' is deprecated, use 'password'", DeprecationWarning, 3
+            # )
+            password = passwd
+    
+        if compress or named_pipe:
+            raise NotImplementedError(
+                "compress and named_pipe arguments are not supported"
+            )
+    
+        self._local_infile = bool(local_infile)
+        if self._local_infile:
+            client_flag |= CLIENT.LOCAL_FILES
+    
+        if read_default_group and not read_default_file:
+            if sys.platform.startswith("win"):
+                read_default_file = "c:\\my.ini"
+            else:
+                read_default_file = "/etc/my.cnf"
+    
+        if read_default_file:
+            if not read_default_group:
+                read_default_group = "client"
+    
+            cfg = Parser()
+            cfg.read(os.path.expanduser(read_default_file))
+    
+            def _config(key, arg):
+                if arg:
+                    return arg
+                try:
+                    return cfg.get(read_default_group, key)
+                except Exception:
+                    return arg
+    
+            user = _config("user", user)
+            password = _config("password", password)
+            host = _config("host", host)
+            database = _config("database", database)
+            unix_socket = _config("socket", unix_socket)
+            port = int(_config("port", port))
+            bind_address = _config("bind-address", bind_address)
+            charset = _config("default-character-set", charset)
+            if not ssl:
+                ssl = {}
+            if isinstance(ssl, dict):
+                for key in ["ca", "capath", "cert", "key", "cipher"]:
+                    value = _config("ssl-" + key, ssl.get(key))
+                    if value:
+                        ssl[key] = value
+    
+        self.ssl = False
+        if not ssl_disabled:
+            if ssl_ca or ssl_cert or ssl_key or ssl_verify_cert or ssl_verify_identity:
+                ssl = {
+                    "ca": ssl_ca,
+                    "check_hostname": bool(ssl_verify_identity),
+                    "verify_mode": ssl_verify_cert
+                    if ssl_verify_cert is not None
+                    else False,
+                }
+                if ssl_cert is not None:
+                    ssl["cert"] = ssl_cert
+                if ssl_key is not None:
+                    ssl["key"] = ssl_key
+            if ssl:
+                if not SSL_ENABLED:
+                    raise NotImplementedError("ssl module not found")
+                self.ssl = True
+                client_flag |= CLIENT.SSL
+                self.ctx = self._create_ssl_ctx(ssl)
+    
+        self.host = host or "localhost"
+        self.port = port or 3306
+        if type(self.port) is not int:
+            raise ValueError("port should be of type int")
+        self.user = user or DEFAULT_USER
+        self.password = password or b""
+        if isinstance(self.password, str):
+            self.password = self.password.encode("latin1")
+        self.db = database
+        self.unix_socket = unix_socket
+        self.bind_address = bind_address
+        if not (0 < connect_timeout <= 31536000):
+            raise ValueError("connect_timeout should be >0 and <=31536000")
+        self.connect_timeout = connect_timeout or None
+        if read_timeout is not None and read_timeout <= 0:
+            raise ValueError("read_timeout should be > 0")
+        self._read_timeout = read_timeout
+        if write_timeout is not None and write_timeout <= 0:
+            raise ValueError("write_timeout should be > 0")
+        self._write_timeout = write_timeout
+    
+        self.charset = charset or DEFAULT_CHARSET
+        self.use_unicode = use_unicode
+    
+        self.encoding = charset_by_name(self.charset).encoding
+    
+        client_flag |= CLIENT.CAPABILITIES
+        if self.db:
+            client_flag |= CLIENT.CONNECT_WITH_DB
+    
+        self.client_flag = client_flag
+    
+        self.cursorclass = cursorclass
+    
+        self._result = None
+        self._affected_rows = 0
+        self.host_info = "Not connected"
+    
+        # specified autocommit mode. None means use server default.
+        self.autocommit_mode = autocommit
+    
+        if conv is None:
+            conv = converters.conversions
+    
+        # Need for MySQLdb compatibility.
+        self.encoders = {k: v for (k, v) in conv.items() if type(k) is not int}
+        self.decoders = {k: v for (k, v) in conv.items() if type(k) is int}
+        self.sql_mode = sql_mode
+        self.init_command = init_command
+        self.max_allowed_packet = max_allowed_packet
+        self._auth_plugin_map = auth_plugin_map or {}
+        self._binary_prefix = binary_prefix
+        self.server_public_key = server_public_key
+    
+        self._connect_attrs = {
+            "_client_name": "pymysql",
+            "_pid": str(os.getpid()),
+            "_client_version": VERSION_STRING,
+        }
+    
+        if program_name:
+            self._connect_attrs["program_name"] = program_name
+    
+        if defer_connect:
+            self._sock = None
+        else:
+>           self.connect()
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:353: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pymysql.connections.Connection object at 0x7fe6d68889e8>
+sock = <socket.socket [closed] fd=-1, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=6>
+
+    def connect(self, sock=None):
+        self._closed = False
+        try:
+            if sock is None:
+                if self.unix_socket:
+                    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                    sock.settimeout(self.connect_timeout)
+                    sock.connect(self.unix_socket)
+                    self.host_info = "Localhost via UNIX socket"
+                    self._secure = True
+                    if DEBUG:
+                        print("connected using unix_socket")
+                else:
+                    kwargs = {}
+                    if self.bind_address is not None:
+                        kwargs["source_address"] = (self.bind_address, 0)
+                    while True:
+                        try:
+                            sock = socket.create_connection(
+                                (self.host, self.port), self.connect_timeout, **kwargs
+                            )
+                            break
+                        except (OSError, IOError) as e:
+                            if e.errno == errno.EINTR:
+                                continue
+                            raise
+                    self.host_info = "socket %s:%d" % (self.host, self.port)
+                    if DEBUG:
+                        print("connected using socket")
+                    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+                sock.settimeout(None)
+    
+            self._sock = sock
+            self._rfile = sock.makefile("rb")
+            self._next_seq_id = 0
+    
+            self._get_server_information()
+>           self._request_authentication()
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:633: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pymysql.connections.Connection object at 0x7fe6d68889e8>
+
+    def _request_authentication(self):
+        # https://dev.mysql.com/doc/internals/en/connection-phase-packets.html#packet-Protocol::HandshakeResponse
+        if int(self.server_version.split(".", 1)[0]) >= 5:
+            self.client_flag |= CLIENT.MULTI_RESULTS
+    
+        if self.user is None:
+            raise ValueError("Did not specify a username")
+    
+        charset_id = charset_by_name(self.charset).id
+        if isinstance(self.user, str):
+            self.user = self.user.encode(self.encoding)
+    
+        data_init = struct.pack(
+            "<iIB23s", self.client_flag, MAX_PACKET_LEN, charset_id, b""
+        )
+    
+        if self.ssl and self.server_capabilities & CLIENT.SSL:
+            self.write_packet(data_init)
+    
+            self._sock = self.ctx.wrap_socket(self._sock, server_hostname=self.host)
+            self._rfile = self._sock.makefile("rb")
+            self._secure = True
+    
+        data = data_init + self.user + b"\0"
+    
+        authresp = b""
+        plugin_name = None
+    
+        if self._auth_plugin_name == "":
+            plugin_name = b""
+            authresp = _auth.scramble_native_password(self.password, self.salt)
+        elif self._auth_plugin_name == "mysql_native_password":
+            plugin_name = b"mysql_native_password"
+            authresp = _auth.scramble_native_password(self.password, self.salt)
+        elif self._auth_plugin_name == "caching_sha2_password":
+            plugin_name = b"caching_sha2_password"
+            if self.password:
+                if DEBUG:
+                    print("caching_sha2: trying fast path")
+                authresp = _auth.scramble_caching_sha2(self.password, self.salt)
+            else:
+                if DEBUG:
+                    print("caching_sha2: empty password")
+        elif self._auth_plugin_name == "sha256_password":
+            plugin_name = b"sha256_password"
+            if self.ssl and self.server_capabilities & CLIENT.SSL:
+                authresp = self.password + b"\0"
+            elif self.password:
+                authresp = b"\1"  # request public key
+            else:
+                authresp = b"\0"  # empty password
+    
+        if self.server_capabilities & CLIENT.PLUGIN_AUTH_LENENC_CLIENT_DATA:
+            data += _lenenc_int(len(authresp)) + authresp
+        elif self.server_capabilities & CLIENT.SECURE_CONNECTION:
+            data += struct.pack("B", len(authresp)) + authresp
+        else:  # pragma: no cover - not testing against servers without secure auth (>=5.0)
+            data += authresp + b"\0"
+    
+        if self.db and self.server_capabilities & CLIENT.CONNECT_WITH_DB:
+            if isinstance(self.db, str):
+                self.db = self.db.encode(self.encoding)
+            data += self.db + b"\0"
+    
+        if self.server_capabilities & CLIENT.PLUGIN_AUTH:
+            data += (plugin_name or b"") + b"\0"
+    
+        if self.server_capabilities & CLIENT.CONNECT_ATTRS:
+            connect_attrs = b""
+            for k, v in self._connect_attrs.items():
+                k = k.encode("utf-8")
+                connect_attrs += struct.pack("B", len(k)) + k
+                v = v.encode("utf-8")
+                connect_attrs += struct.pack("B", len(v)) + v
+            data += struct.pack("B", len(connect_attrs)) + connect_attrs
+    
+        self.write_packet(data)
+>       auth_packet = self._read_packet()
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:907: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pymysql.connections.Connection object at 0x7fe6d68889e8>
+packet_type = <class 'pymysql.protocol.MysqlPacket'>
+
+    def _read_packet(self, packet_type=MysqlPacket):
+        """Read an entire "mysql packet" in its entirety from the network
+            and return a MysqlPacket type that represents the results.
+    
+            :raise OperationalError: If the connection to the MySQL server is lost.
+            :raise InternalError: If the packet sequence number is wrong.
+            """
+        buff = bytearray()
+        while True:
+            packet_header = self._read_bytes(4)
+            # if DEBUG: dump_packet(packet_header)
+    
+            btrl, btrh, packet_number = struct.unpack("<HBB", packet_header)
+            bytes_to_read = btrl + (btrh << 16)
+            if packet_number != self._next_seq_id:
+                self._force_close()
+                if packet_number == 0:
+                    # MariaDB sends error packet with seqno==0 when shutdown
+                    raise err.OperationalError(
+                        CR.CR_SERVER_LOST,
+                        "Lost connection to MySQL server during query",
+                    )
+                raise err.InternalError(
+                    "Packet sequence number wrong - got %d expected %d"
+                    % (packet_number, self._next_seq_id)
+                )
+            self._next_seq_id = (self._next_seq_id + 1) % 256
+    
+            recv_data = self._read_bytes(bytes_to_read)
+            if DEBUG:
+                dump_packet(recv_data)
+            buff += recv_data
+            # https://dev.mysql.com/doc/internals/en/sending-more-than-16mbyte.html
+            if bytes_to_read == 0xFFFFFF:
+                continue
+            if bytes_to_read < MAX_PACKET_LEN:
+                break
+    
+        packet = packet_type(bytes(buff), self.encoding)
+        if packet.is_error_packet():
+            if self._result is not None and self._result.unbuffered_active is True:
+                self._result.unbuffered_active = False
+>           packet.raise_for_error()
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:725: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pymysql.protocol.MysqlPacket object at 0x7fe6d6888ba8>
+
+    def raise_for_error(self):
+        self.rewind()
+        self.advance(1)  # field_count == error (we already know that)
+        errno = self.read_uint16()
+        if DEBUG:
+            print("errno =", errno)
+>       err.raise_mysql_exception(self._data)
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/protocol.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+data = b"\xff\xa2\x06#28000Access denied for user 'user'@'localhost'"
+
+    def raise_mysql_exception(data):
+        errno = struct.unpack("<h", data[1:3])[0]
+        errval = data[9:].decode("utf-8", "replace")
+        errorclass = error_map.get(errno)
+        if errorclass is None:
+            errorclass = InternalError if errno < 1000 else OperationalError
+>       raise errorclass(errno, errval)
+E       pymysql.err.OperationalError: (1698, "Access denied for user 'user'@'localhost'")
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/err.py:143: OperationalError
+
+The above exception was the direct cause of the following exception:
+
+    @pytest.fixture
+    def app():
+        app = create_app()
+        app.config['TESTING'] = True
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://user:password@localhost/test_db'
+    
+        with app.app_context():
+>           db.create_all()  # Créer les tables dans la base de données de test
+
+test_api.py:13: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/lib/python3.6/site-packages/flask_sqlalchemy/__init__.py:1094: in create_all
+    self._execute_for_all_tables(app, bind, 'create_all')
+../../../anaconda3/lib/python3.6/site-packages/flask_sqlalchemy/__init__.py:1086: in _execute_for_all_tables
+    op(bind=self.get_engine(app, bind), **extra)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/sql/schema.py:4931: in create_all
+    ddl.SchemaGenerator, self, checkfirst=checkfirst, tables=tables
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3237: in _run_ddl_visitor
+    with self.begin() as conn:
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3153: in begin
+    conn = self.connect(close_with_result=close_with_result)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3325: in connect
+    return self._connection_cls(self, close_with_result=close_with_result)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:96: in __init__
+    else engine.raw_connection()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3404: in raw_connection
+    return self._wrap_pool_connect(self.pool.connect, _connection)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3375: in _wrap_pool_connect
+    e, dialect, self
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:2209: in _handle_dbapi_exception_noconnection
+    sqlalchemy_exception, with_traceback=exc_info[2], from_=e
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/compat.py:211: in raise_
+    raise exception
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3371: in _wrap_pool_connect
+    return fn()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:327: in connect
+    return _ConnectionFairy._checkout(self)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:894: in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:493: in checkout
+    rec = pool._do_get()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/impl.py:146: in _do_get
+    self._dec_overflow()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/langhelpers.py:72: in __exit__
+    with_traceback=exc_tb,
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/compat.py:211: in raise_
+    raise exception
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/impl.py:143: in _do_get
+    return self._create_connection()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:273: in _create_connection
+    return _ConnectionRecord(self)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:388: in __init__
+    self.__connect()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:691: in __connect
+    pool.logger.debug("Error on connect(): %s", e)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/langhelpers.py:72: in __exit__
+    with_traceback=exc_tb,
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/compat.py:211: in raise_
+    raise exception
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:686: in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/create.py:574: in connect
+    return dialect.connect(*cargs, **cparams)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/default.py:598: in connect
+    return self.dbapi.connect(*cargs, **cparams)
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:353: in __init__
+    self.connect()
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:633: in connect
+    self._request_authentication()
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:907: in _request_authentication
+    auth_packet = self._read_packet()
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:725: in _read_packet
+    packet.raise_for_error()
+../../../anaconda3/lib/python3.6/site-packages/pymysql/protocol.py:221: in raise_for_error
+    err.raise_mysql_exception(self._data)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+data = b"\xff\xa2\x06#28000Access denied for user 'user'@'localhost'"
+
+    def raise_mysql_exception(data):
+        errno = struct.unpack("<h", data[1:3])[0]
+        errval = data[9:].decode("utf-8", "replace")
+        errorclass = error_map.get(errno)
+        if errorclass is None:
+            errorclass = InternalError if errno < 1000 else OperationalError
+>       raise errorclass(errno, errval)
+E       sqlalchemy.exc.OperationalError: (pymysql.err.OperationalError) (1698, "Access denied for user 'user'@'localhost'")
+E       (Background on this error at: https://sqlalche.me/e/14/e3q8)
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/err.py:143: OperationalError
+______________________ ERROR at setup of test_update_task ______________________
+
+self = Engine(mysql+pymysql://user:***@localhost/test_db?charset=utf8)
+fn = <bound method Pool.connect of <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d71a0a20>>
+connection = None
+
+    def _wrap_pool_connect(self, fn, connection):
+        dialect = self.dialect
+        try:
+>           return fn()
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3371: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d71a0a20>
+
+    def connect(self):
+        """Return a DBAPI connection from the pool.
+    
+            The connection is instrumented such that when its
+            ``close()`` method is called, the connection will be returned to
+            the pool.
+    
+            """
+>       return _ConnectionFairy._checkout(self)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:327: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'sqlalchemy.pool.base._ConnectionFairy'>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d71a0a20>
+threadconns = None, fairy = None
+
+    @classmethod
+    def _checkout(cls, pool, threadconns=None, fairy=None):
+        if not fairy:
+>           fairy = _ConnectionRecord.checkout(pool)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:894: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'sqlalchemy.pool.base._ConnectionRecord'>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d71a0a20>
+
+    @classmethod
+    def checkout(cls, pool):
+>       rec = pool._do_get()
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:493: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d71a0a20>
+
+    def _do_get(self):
+        use_overflow = self._max_overflow > -1
+    
+        try:
+            wait = use_overflow and self._overflow >= self._max_overflow
+            return self._pool.get(wait, self._timeout)
+        except sqla_queue.Empty:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
+                return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %0.2f"
+                    % (self.size(), self.overflow(), self._timeout),
+                    code="3o7r",
+                )
+    
+        if self._inc_overflow():
+            try:
+                return self._create_connection()
+            except:
+                with util.safe_reraise():
+>                   self._dec_overflow()
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/impl.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.util.langhelpers.safe_reraise object at 0x7fe6d71a05f8>
+type_ = None, value = None, traceback = None
+
+    def __exit__(self, type_, value, traceback):
+        # see #2703 for notes
+        if type_ is None:
+            exc_type, exc_value, exc_tb = self._exc_info
+            self._exc_info = None  # remove potential circular references
+            if not self.warn_only:
+                compat.raise_(
+                    exc_value,
+>                   with_traceback=exc_tb,
+                )
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/langhelpers.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def raise_(
+        exception, with_traceback=None, replace_context=None, from_=False
+    ):
+        r"""implement "raise" with cause support.
+    
+            :param exception: exception to raise
+            :param with_traceback: will call exception.with_traceback()
+            :param replace_context: an as-yet-unsupported feature.  This is
+             an exception object which we are "replacing", e.g., it's our
+             "cause" but we don't want it printed.    Basically just what
+             ``__suppress_context__`` does but we don't want to suppress
+             the enclosing context, if any.  So for now we make it the
+             cause.
+            :param from\_: the cause.  this actually sets the cause and doesn't
+             hope to hide it someday.
+    
+            """
+        if with_traceback is not None:
+            exception = exception.with_traceback(with_traceback)
+    
+        if from_ is not False:
+            exception.__cause__ = from_
+        elif replace_context is not None:
+            # no good solution here, we would like to have the exception
+            # have only the context of replace_context.__context__ so that the
+            # intermediary exception does not change, but we can't figure
+            # that out.
+            exception.__cause__ = replace_context
+    
+        try:
+>           raise exception
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/compat.py:211: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d71a0a20>
+
+    def _do_get(self):
+        use_overflow = self._max_overflow > -1
+    
+        try:
+            wait = use_overflow and self._overflow >= self._max_overflow
+            return self._pool.get(wait, self._timeout)
+        except sqla_queue.Empty:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
+                return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %0.2f"
+                    % (self.size(), self.overflow(), self._timeout),
+                    code="3o7r",
+                )
+    
+        if self._inc_overflow():
+            try:
+>               return self._create_connection()
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/impl.py:143: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d71a0a20>
+
+    def _create_connection(self):
+        """Called by subclasses to create a new ConnectionRecord."""
+    
+>       return _ConnectionRecord(self)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:273: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe6d71a0438>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d71a0a20>, connect = True
+
+    def __init__(self, pool, connect=True):
+        self.__pool = pool
+        if connect:
+>           self.__connect()
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe6d71a0438>
+
+    def __connect(self):
+        pool = self.__pool
+    
+        # ensure any existing connection is removed, so that if
+        # creator fails, this attribute stays None
+        self.dbapi_connection = None
+        try:
+            self.starttime = time.time()
+            self.dbapi_connection = connection = pool._invoke_creator(self)
+            pool.logger.debug("Created new connection %r", connection)
+            self.fresh = True
+        except BaseException as e:
+            with util.safe_reraise():
+>               pool.logger.debug("Error on connect(): %s", e)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:691: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.util.langhelpers.safe_reraise object at 0x7fe6d71a0908>
+type_ = None, value = None, traceback = None
+
+    def __exit__(self, type_, value, traceback):
+        # see #2703 for notes
+        if type_ is None:
+            exc_type, exc_value, exc_tb = self._exc_info
+            self._exc_info = None  # remove potential circular references
+            if not self.warn_only:
+                compat.raise_(
+                    exc_value,
+>                   with_traceback=exc_tb,
+                )
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/langhelpers.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def raise_(
+        exception, with_traceback=None, replace_context=None, from_=False
+    ):
+        r"""implement "raise" with cause support.
+    
+            :param exception: exception to raise
+            :param with_traceback: will call exception.with_traceback()
+            :param replace_context: an as-yet-unsupported feature.  This is
+             an exception object which we are "replacing", e.g., it's our
+             "cause" but we don't want it printed.    Basically just what
+             ``__suppress_context__`` does but we don't want to suppress
+             the enclosing context, if any.  So for now we make it the
+             cause.
+            :param from\_: the cause.  this actually sets the cause and doesn't
+             hope to hide it someday.
+    
+            """
+        if with_traceback is not None:
+            exception = exception.with_traceback(with_traceback)
+    
+        if from_ is not False:
+            exception.__cause__ = from_
+        elif replace_context is not None:
+            # no good solution here, we would like to have the exception
+            # have only the context of replace_context.__context__ so that the
+            # intermediary exception does not change, but we can't figure
+            # that out.
+            exception.__cause__ = replace_context
+    
+        try:
+>           raise exception
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/compat.py:211: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe6d71a0438>
+
+    def __connect(self):
+        pool = self.__pool
+    
+        # ensure any existing connection is removed, so that if
+        # creator fails, this attribute stays None
+        self.dbapi_connection = None
+        try:
+            self.starttime = time.time()
+>           self.dbapi_connection = connection = pool._invoke_creator(self)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:686: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection_record = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe6d71a0438>
+
+    def connect(connection_record=None):
+        if dialect._has_events:
+            for fn in dialect.dispatch.do_connect:
+                connection = fn(dialect, connection_record, cargs, cparams)
+                if connection is not None:
+                    return connection
+>       return dialect.connect(*cargs, **cparams)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/create.py:574: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.dialects.mysql.pymysql.MySQLDialect_pymysql object at 0x7fe6d71a0630>
+cargs = ()
+cparams = {'charset': 'utf8', 'client_flag': 2, 'database': 'test_db', 'host': 'localhost', ...}
+
+    def connect(self, *cargs, **cparams):
+        # inherits the docstring from interfaces.Dialect.connect
+>       return self.dbapi.connect(*cargs, **cparams)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/default.py:598: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pymysql.connections.Connection object at 0x7fe6d71a0dd8>
+
+    def __init__(
+        self,
+        *,
+        user=None,  # The first four arguments is based on DB-API 2.0 recommendation.
+        password="",
+        host=None,
+        database=None,
+        unix_socket=None,
+        port=0,
+        charset="",
+        sql_mode=None,
+        read_default_file=None,
+        conv=None,
+        use_unicode=True,
+        client_flag=0,
+        cursorclass=Cursor,
+        init_command=None,
+        connect_timeout=10,
+        read_default_group=None,
+        autocommit=False,
+        local_infile=False,
+        max_allowed_packet=16 * 1024 * 1024,
+        defer_connect=False,
+        auth_plugin_map=None,
+        read_timeout=None,
+        write_timeout=None,
+        bind_address=None,
+        binary_prefix=False,
+        program_name=None,
+        server_public_key=None,
+        ssl=None,
+        ssl_ca=None,
+        ssl_cert=None,
+        ssl_disabled=None,
+        ssl_key=None,
+        ssl_verify_cert=None,
+        ssl_verify_identity=None,
+        compress=None,  # not supported
+        named_pipe=None,  # not supported
+        passwd=None,  # deprecated
+        db=None,  # deprecated
+    ):
+        if db is not None and database is None:
+            # We will raise warining in 2022 or later.
+            # See https://github.com/PyMySQL/PyMySQL/issues/939
+            # warnings.warn("'db' is deprecated, use 'database'", DeprecationWarning, 3)
+            database = db
+        if passwd is not None and not password:
+            # We will raise warining in 2022 or later.
+            # See https://github.com/PyMySQL/PyMySQL/issues/939
+            # warnings.warn(
+            #    "'passwd' is deprecated, use 'password'", DeprecationWarning, 3
+            # )
+            password = passwd
+    
+        if compress or named_pipe:
+            raise NotImplementedError(
+                "compress and named_pipe arguments are not supported"
+            )
+    
+        self._local_infile = bool(local_infile)
+        if self._local_infile:
+            client_flag |= CLIENT.LOCAL_FILES
+    
+        if read_default_group and not read_default_file:
+            if sys.platform.startswith("win"):
+                read_default_file = "c:\\my.ini"
+            else:
+                read_default_file = "/etc/my.cnf"
+    
+        if read_default_file:
+            if not read_default_group:
+                read_default_group = "client"
+    
+            cfg = Parser()
+            cfg.read(os.path.expanduser(read_default_file))
+    
+            def _config(key, arg):
+                if arg:
+                    return arg
+                try:
+                    return cfg.get(read_default_group, key)
+                except Exception:
+                    return arg
+    
+            user = _config("user", user)
+            password = _config("password", password)
+            host = _config("host", host)
+            database = _config("database", database)
+            unix_socket = _config("socket", unix_socket)
+            port = int(_config("port", port))
+            bind_address = _config("bind-address", bind_address)
+            charset = _config("default-character-set", charset)
+            if not ssl:
+                ssl = {}
+            if isinstance(ssl, dict):
+                for key in ["ca", "capath", "cert", "key", "cipher"]:
+                    value = _config("ssl-" + key, ssl.get(key))
+                    if value:
+                        ssl[key] = value
+    
+        self.ssl = False
+        if not ssl_disabled:
+            if ssl_ca or ssl_cert or ssl_key or ssl_verify_cert or ssl_verify_identity:
+                ssl = {
+                    "ca": ssl_ca,
+                    "check_hostname": bool(ssl_verify_identity),
+                    "verify_mode": ssl_verify_cert
+                    if ssl_verify_cert is not None
+                    else False,
+                }
+                if ssl_cert is not None:
+                    ssl["cert"] = ssl_cert
+                if ssl_key is not None:
+                    ssl["key"] = ssl_key
+            if ssl:
+                if not SSL_ENABLED:
+                    raise NotImplementedError("ssl module not found")
+                self.ssl = True
+                client_flag |= CLIENT.SSL
+                self.ctx = self._create_ssl_ctx(ssl)
+    
+        self.host = host or "localhost"
+        self.port = port or 3306
+        if type(self.port) is not int:
+            raise ValueError("port should be of type int")
+        self.user = user or DEFAULT_USER
+        self.password = password or b""
+        if isinstance(self.password, str):
+            self.password = self.password.encode("latin1")
+        self.db = database
+        self.unix_socket = unix_socket
+        self.bind_address = bind_address
+        if not (0 < connect_timeout <= 31536000):
+            raise ValueError("connect_timeout should be >0 and <=31536000")
+        self.connect_timeout = connect_timeout or None
+        if read_timeout is not None and read_timeout <= 0:
+            raise ValueError("read_timeout should be > 0")
+        self._read_timeout = read_timeout
+        if write_timeout is not None and write_timeout <= 0:
+            raise ValueError("write_timeout should be > 0")
+        self._write_timeout = write_timeout
+    
+        self.charset = charset or DEFAULT_CHARSET
+        self.use_unicode = use_unicode
+    
+        self.encoding = charset_by_name(self.charset).encoding
+    
+        client_flag |= CLIENT.CAPABILITIES
+        if self.db:
+            client_flag |= CLIENT.CONNECT_WITH_DB
+    
+        self.client_flag = client_flag
+    
+        self.cursorclass = cursorclass
+    
+        self._result = None
+        self._affected_rows = 0
+        self.host_info = "Not connected"
+    
+        # specified autocommit mode. None means use server default.
+        self.autocommit_mode = autocommit
+    
+        if conv is None:
+            conv = converters.conversions
+    
+        # Need for MySQLdb compatibility.
+        self.encoders = {k: v for (k, v) in conv.items() if type(k) is not int}
+        self.decoders = {k: v for (k, v) in conv.items() if type(k) is int}
+        self.sql_mode = sql_mode
+        self.init_command = init_command
+        self.max_allowed_packet = max_allowed_packet
+        self._auth_plugin_map = auth_plugin_map or {}
+        self._binary_prefix = binary_prefix
+        self.server_public_key = server_public_key
+    
+        self._connect_attrs = {
+            "_client_name": "pymysql",
+            "_pid": str(os.getpid()),
+            "_client_version": VERSION_STRING,
+        }
+    
+        if program_name:
+            self._connect_attrs["program_name"] = program_name
+    
+        if defer_connect:
+            self._sock = None
+        else:
+>           self.connect()
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:353: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pymysql.connections.Connection object at 0x7fe6d71a0dd8>
+sock = <socket.socket [closed] fd=-1, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=6>
+
+    def connect(self, sock=None):
+        self._closed = False
+        try:
+            if sock is None:
+                if self.unix_socket:
+                    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                    sock.settimeout(self.connect_timeout)
+                    sock.connect(self.unix_socket)
+                    self.host_info = "Localhost via UNIX socket"
+                    self._secure = True
+                    if DEBUG:
+                        print("connected using unix_socket")
+                else:
+                    kwargs = {}
+                    if self.bind_address is not None:
+                        kwargs["source_address"] = (self.bind_address, 0)
+                    while True:
+                        try:
+                            sock = socket.create_connection(
+                                (self.host, self.port), self.connect_timeout, **kwargs
+                            )
+                            break
+                        except (OSError, IOError) as e:
+                            if e.errno == errno.EINTR:
+                                continue
+                            raise
+                    self.host_info = "socket %s:%d" % (self.host, self.port)
+                    if DEBUG:
+                        print("connected using socket")
+                    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+                sock.settimeout(None)
+    
+            self._sock = sock
+            self._rfile = sock.makefile("rb")
+            self._next_seq_id = 0
+    
+            self._get_server_information()
+>           self._request_authentication()
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:633: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pymysql.connections.Connection object at 0x7fe6d71a0dd8>
+
+    def _request_authentication(self):
+        # https://dev.mysql.com/doc/internals/en/connection-phase-packets.html#packet-Protocol::HandshakeResponse
+        if int(self.server_version.split(".", 1)[0]) >= 5:
+            self.client_flag |= CLIENT.MULTI_RESULTS
+    
+        if self.user is None:
+            raise ValueError("Did not specify a username")
+    
+        charset_id = charset_by_name(self.charset).id
+        if isinstance(self.user, str):
+            self.user = self.user.encode(self.encoding)
+    
+        data_init = struct.pack(
+            "<iIB23s", self.client_flag, MAX_PACKET_LEN, charset_id, b""
+        )
+    
+        if self.ssl and self.server_capabilities & CLIENT.SSL:
+            self.write_packet(data_init)
+    
+            self._sock = self.ctx.wrap_socket(self._sock, server_hostname=self.host)
+            self._rfile = self._sock.makefile("rb")
+            self._secure = True
+    
+        data = data_init + self.user + b"\0"
+    
+        authresp = b""
+        plugin_name = None
+    
+        if self._auth_plugin_name == "":
+            plugin_name = b""
+            authresp = _auth.scramble_native_password(self.password, self.salt)
+        elif self._auth_plugin_name == "mysql_native_password":
+            plugin_name = b"mysql_native_password"
+            authresp = _auth.scramble_native_password(self.password, self.salt)
+        elif self._auth_plugin_name == "caching_sha2_password":
+            plugin_name = b"caching_sha2_password"
+            if self.password:
+                if DEBUG:
+                    print("caching_sha2: trying fast path")
+                authresp = _auth.scramble_caching_sha2(self.password, self.salt)
+            else:
+                if DEBUG:
+                    print("caching_sha2: empty password")
+        elif self._auth_plugin_name == "sha256_password":
+            plugin_name = b"sha256_password"
+            if self.ssl and self.server_capabilities & CLIENT.SSL:
+                authresp = self.password + b"\0"
+            elif self.password:
+                authresp = b"\1"  # request public key
+            else:
+                authresp = b"\0"  # empty password
+    
+        if self.server_capabilities & CLIENT.PLUGIN_AUTH_LENENC_CLIENT_DATA:
+            data += _lenenc_int(len(authresp)) + authresp
+        elif self.server_capabilities & CLIENT.SECURE_CONNECTION:
+            data += struct.pack("B", len(authresp)) + authresp
+        else:  # pragma: no cover - not testing against servers without secure auth (>=5.0)
+            data += authresp + b"\0"
+    
+        if self.db and self.server_capabilities & CLIENT.CONNECT_WITH_DB:
+            if isinstance(self.db, str):
+                self.db = self.db.encode(self.encoding)
+            data += self.db + b"\0"
+    
+        if self.server_capabilities & CLIENT.PLUGIN_AUTH:
+            data += (plugin_name or b"") + b"\0"
+    
+        if self.server_capabilities & CLIENT.CONNECT_ATTRS:
+            connect_attrs = b""
+            for k, v in self._connect_attrs.items():
+                k = k.encode("utf-8")
+                connect_attrs += struct.pack("B", len(k)) + k
+                v = v.encode("utf-8")
+                connect_attrs += struct.pack("B", len(v)) + v
+            data += struct.pack("B", len(connect_attrs)) + connect_attrs
+    
+        self.write_packet(data)
+>       auth_packet = self._read_packet()
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:907: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pymysql.connections.Connection object at 0x7fe6d71a0dd8>
+packet_type = <class 'pymysql.protocol.MysqlPacket'>
+
+    def _read_packet(self, packet_type=MysqlPacket):
+        """Read an entire "mysql packet" in its entirety from the network
+            and return a MysqlPacket type that represents the results.
+    
+            :raise OperationalError: If the connection to the MySQL server is lost.
+            :raise InternalError: If the packet sequence number is wrong.
+            """
+        buff = bytearray()
+        while True:
+            packet_header = self._read_bytes(4)
+            # if DEBUG: dump_packet(packet_header)
+    
+            btrl, btrh, packet_number = struct.unpack("<HBB", packet_header)
+            bytes_to_read = btrl + (btrh << 16)
+            if packet_number != self._next_seq_id:
+                self._force_close()
+                if packet_number == 0:
+                    # MariaDB sends error packet with seqno==0 when shutdown
+                    raise err.OperationalError(
+                        CR.CR_SERVER_LOST,
+                        "Lost connection to MySQL server during query",
+                    )
+                raise err.InternalError(
+                    "Packet sequence number wrong - got %d expected %d"
+                    % (packet_number, self._next_seq_id)
+                )
+            self._next_seq_id = (self._next_seq_id + 1) % 256
+    
+            recv_data = self._read_bytes(bytes_to_read)
+            if DEBUG:
+                dump_packet(recv_data)
+            buff += recv_data
+            # https://dev.mysql.com/doc/internals/en/sending-more-than-16mbyte.html
+            if bytes_to_read == 0xFFFFFF:
+                continue
+            if bytes_to_read < MAX_PACKET_LEN:
+                break
+    
+        packet = packet_type(bytes(buff), self.encoding)
+        if packet.is_error_packet():
+            if self._result is not None and self._result.unbuffered_active is True:
+                self._result.unbuffered_active = False
+>           packet.raise_for_error()
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:725: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pymysql.protocol.MysqlPacket object at 0x7fe6d71a0a58>
+
+    def raise_for_error(self):
+        self.rewind()
+        self.advance(1)  # field_count == error (we already know that)
+        errno = self.read_uint16()
+        if DEBUG:
+            print("errno =", errno)
+>       err.raise_mysql_exception(self._data)
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/protocol.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+data = b"\xff\xa2\x06#28000Access denied for user 'user'@'localhost'"
+
+    def raise_mysql_exception(data):
+        errno = struct.unpack("<h", data[1:3])[0]
+        errval = data[9:].decode("utf-8", "replace")
+        errorclass = error_map.get(errno)
+        if errorclass is None:
+            errorclass = InternalError if errno < 1000 else OperationalError
+>       raise errorclass(errno, errval)
+E       pymysql.err.OperationalError: (1698, "Access denied for user 'user'@'localhost'")
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/err.py:143: OperationalError
+
+The above exception was the direct cause of the following exception:
+
+    @pytest.fixture
+    def app():
+        app = create_app()
+        app.config['TESTING'] = True
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://user:password@localhost/test_db'
+    
+        with app.app_context():
+>           db.create_all()  # Créer les tables dans la base de données de test
+
+test_api.py:13: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/lib/python3.6/site-packages/flask_sqlalchemy/__init__.py:1094: in create_all
+    self._execute_for_all_tables(app, bind, 'create_all')
+../../../anaconda3/lib/python3.6/site-packages/flask_sqlalchemy/__init__.py:1086: in _execute_for_all_tables
+    op(bind=self.get_engine(app, bind), **extra)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/sql/schema.py:4931: in create_all
+    ddl.SchemaGenerator, self, checkfirst=checkfirst, tables=tables
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3237: in _run_ddl_visitor
+    with self.begin() as conn:
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3153: in begin
+    conn = self.connect(close_with_result=close_with_result)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3325: in connect
+    return self._connection_cls(self, close_with_result=close_with_result)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:96: in __init__
+    else engine.raw_connection()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3404: in raw_connection
+    return self._wrap_pool_connect(self.pool.connect, _connection)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3375: in _wrap_pool_connect
+    e, dialect, self
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:2209: in _handle_dbapi_exception_noconnection
+    sqlalchemy_exception, with_traceback=exc_info[2], from_=e
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/compat.py:211: in raise_
+    raise exception
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3371: in _wrap_pool_connect
+    return fn()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:327: in connect
+    return _ConnectionFairy._checkout(self)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:894: in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:493: in checkout
+    rec = pool._do_get()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/impl.py:146: in _do_get
+    self._dec_overflow()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/langhelpers.py:72: in __exit__
+    with_traceback=exc_tb,
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/compat.py:211: in raise_
+    raise exception
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/impl.py:143: in _do_get
+    return self._create_connection()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:273: in _create_connection
+    return _ConnectionRecord(self)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:388: in __init__
+    self.__connect()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:691: in __connect
+    pool.logger.debug("Error on connect(): %s", e)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/langhelpers.py:72: in __exit__
+    with_traceback=exc_tb,
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/compat.py:211: in raise_
+    raise exception
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:686: in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/create.py:574: in connect
+    return dialect.connect(*cargs, **cparams)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/default.py:598: in connect
+    return self.dbapi.connect(*cargs, **cparams)
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:353: in __init__
+    self.connect()
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:633: in connect
+    self._request_authentication()
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:907: in _request_authentication
+    auth_packet = self._read_packet()
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:725: in _read_packet
+    packet.raise_for_error()
+../../../anaconda3/lib/python3.6/site-packages/pymysql/protocol.py:221: in raise_for_error
+    err.raise_mysql_exception(self._data)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+data = b"\xff\xa2\x06#28000Access denied for user 'user'@'localhost'"
+
+    def raise_mysql_exception(data):
+        errno = struct.unpack("<h", data[1:3])[0]
+        errval = data[9:].decode("utf-8", "replace")
+        errorclass = error_map.get(errno)
+        if errorclass is None:
+            errorclass = InternalError if errno < 1000 else OperationalError
+>       raise errorclass(errno, errval)
+E       sqlalchemy.exc.OperationalError: (pymysql.err.OperationalError) (1698, "Access denied for user 'user'@'localhost'")
+E       (Background on this error at: https://sqlalche.me/e/14/e3q8)
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/err.py:143: OperationalError
+______________________ ERROR at setup of test_delete_task ______________________
+
+self = Engine(mysql+pymysql://user:***@localhost/test_db?charset=utf8)
+fn = <bound method Pool.connect of <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d6b8d710>>
+connection = None
+
+    def _wrap_pool_connect(self, fn, connection):
+        dialect = self.dialect
+        try:
+>           return fn()
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3371: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d6b8d710>
+
+    def connect(self):
+        """Return a DBAPI connection from the pool.
+    
+            The connection is instrumented such that when its
+            ``close()`` method is called, the connection will be returned to
+            the pool.
+    
+            """
+>       return _ConnectionFairy._checkout(self)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:327: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'sqlalchemy.pool.base._ConnectionFairy'>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d6b8d710>
+threadconns = None, fairy = None
+
+    @classmethod
+    def _checkout(cls, pool, threadconns=None, fairy=None):
+        if not fairy:
+>           fairy = _ConnectionRecord.checkout(pool)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:894: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'sqlalchemy.pool.base._ConnectionRecord'>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d6b8d710>
+
+    @classmethod
+    def checkout(cls, pool):
+>       rec = pool._do_get()
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:493: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d6b8d710>
+
+    def _do_get(self):
+        use_overflow = self._max_overflow > -1
+    
+        try:
+            wait = use_overflow and self._overflow >= self._max_overflow
+            return self._pool.get(wait, self._timeout)
+        except sqla_queue.Empty:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
+                return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %0.2f"
+                    % (self.size(), self.overflow(), self._timeout),
+                    code="3o7r",
+                )
+    
+        if self._inc_overflow():
+            try:
+                return self._create_connection()
+            except:
+                with util.safe_reraise():
+>                   self._dec_overflow()
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/impl.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.util.langhelpers.safe_reraise object at 0x7fe6d6b8de10>
+type_ = None, value = None, traceback = None
+
+    def __exit__(self, type_, value, traceback):
+        # see #2703 for notes
+        if type_ is None:
+            exc_type, exc_value, exc_tb = self._exc_info
+            self._exc_info = None  # remove potential circular references
+            if not self.warn_only:
+                compat.raise_(
+                    exc_value,
+>                   with_traceback=exc_tb,
+                )
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/langhelpers.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def raise_(
+        exception, with_traceback=None, replace_context=None, from_=False
+    ):
+        r"""implement "raise" with cause support.
+    
+            :param exception: exception to raise
+            :param with_traceback: will call exception.with_traceback()
+            :param replace_context: an as-yet-unsupported feature.  This is
+             an exception object which we are "replacing", e.g., it's our
+             "cause" but we don't want it printed.    Basically just what
+             ``__suppress_context__`` does but we don't want to suppress
+             the enclosing context, if any.  So for now we make it the
+             cause.
+            :param from\_: the cause.  this actually sets the cause and doesn't
+             hope to hide it someday.
+    
+            """
+        if with_traceback is not None:
+            exception = exception.with_traceback(with_traceback)
+    
+        if from_ is not False:
+            exception.__cause__ = from_
+        elif replace_context is not None:
+            # no good solution here, we would like to have the exception
+            # have only the context of replace_context.__context__ so that the
+            # intermediary exception does not change, but we can't figure
+            # that out.
+            exception.__cause__ = replace_context
+    
+        try:
+>           raise exception
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/compat.py:211: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d6b8d710>
+
+    def _do_get(self):
+        use_overflow = self._max_overflow > -1
+    
+        try:
+            wait = use_overflow and self._overflow >= self._max_overflow
+            return self._pool.get(wait, self._timeout)
+        except sqla_queue.Empty:
+            # don't do things inside of "except Empty", because when we say
+            # we timed out or can't connect and raise, Python 3 tells
+            # people the real error is queue.Empty which it isn't.
+            pass
+        if use_overflow and self._overflow >= self._max_overflow:
+            if not wait:
+                return self._do_get()
+            else:
+                raise exc.TimeoutError(
+                    "QueuePool limit of size %d overflow %d reached, "
+                    "connection timed out, timeout %0.2f"
+                    % (self.size(), self.overflow(), self._timeout),
+                    code="3o7r",
+                )
+    
+        if self._inc_overflow():
+            try:
+>               return self._create_connection()
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/impl.py:143: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d6b8d710>
+
+    def _create_connection(self):
+        """Called by subclasses to create a new ConnectionRecord."""
+    
+>       return _ConnectionRecord(self)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:273: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe6d6b8dd68>
+pool = <sqlalchemy.pool.impl.QueuePool object at 0x7fe6d6b8d710>, connect = True
+
+    def __init__(self, pool, connect=True):
+        self.__pool = pool
+        if connect:
+>           self.__connect()
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe6d6b8dd68>
+
+    def __connect(self):
+        pool = self.__pool
+    
+        # ensure any existing connection is removed, so that if
+        # creator fails, this attribute stays None
+        self.dbapi_connection = None
+        try:
+            self.starttime = time.time()
+            self.dbapi_connection = connection = pool._invoke_creator(self)
+            pool.logger.debug("Created new connection %r", connection)
+            self.fresh = True
+        except BaseException as e:
+            with util.safe_reraise():
+>               pool.logger.debug("Error on connect(): %s", e)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:691: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.util.langhelpers.safe_reraise object at 0x7fe6d6b8d5f8>
+type_ = None, value = None, traceback = None
+
+    def __exit__(self, type_, value, traceback):
+        # see #2703 for notes
+        if type_ is None:
+            exc_type, exc_value, exc_tb = self._exc_info
+            self._exc_info = None  # remove potential circular references
+            if not self.warn_only:
+                compat.raise_(
+                    exc_value,
+>                   with_traceback=exc_tb,
+                )
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/langhelpers.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def raise_(
+        exception, with_traceback=None, replace_context=None, from_=False
+    ):
+        r"""implement "raise" with cause support.
+    
+            :param exception: exception to raise
+            :param with_traceback: will call exception.with_traceback()
+            :param replace_context: an as-yet-unsupported feature.  This is
+             an exception object which we are "replacing", e.g., it's our
+             "cause" but we don't want it printed.    Basically just what
+             ``__suppress_context__`` does but we don't want to suppress
+             the enclosing context, if any.  So for now we make it the
+             cause.
+            :param from\_: the cause.  this actually sets the cause and doesn't
+             hope to hide it someday.
+    
+            """
+        if with_traceback is not None:
+            exception = exception.with_traceback(with_traceback)
+    
+        if from_ is not False:
+            exception.__cause__ = from_
+        elif replace_context is not None:
+            # no good solution here, we would like to have the exception
+            # have only the context of replace_context.__context__ so that the
+            # intermediary exception does not change, but we can't figure
+            # that out.
+            exception.__cause__ = replace_context
+    
+        try:
+>           raise exception
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/compat.py:211: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe6d6b8dd68>
+
+    def __connect(self):
+        pool = self.__pool
+    
+        # ensure any existing connection is removed, so that if
+        # creator fails, this attribute stays None
+        self.dbapi_connection = None
+        try:
+            self.starttime = time.time()
+>           self.dbapi_connection = connection = pool._invoke_creator(self)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:686: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection_record = <sqlalchemy.pool.base._ConnectionRecord object at 0x7fe6d6b8dd68>
+
+    def connect(connection_record=None):
+        if dialect._has_events:
+            for fn in dialect.dispatch.do_connect:
+                connection = fn(dialect, connection_record, cargs, cparams)
+                if connection is not None:
+                    return connection
+>       return dialect.connect(*cargs, **cparams)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/create.py:574: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.dialects.mysql.pymysql.MySQLDialect_pymysql object at 0x7fe6d6b8d550>
+cargs = ()
+cparams = {'charset': 'utf8', 'client_flag': 2, 'database': 'test_db', 'host': 'localhost', ...}
+
+    def connect(self, *cargs, **cparams):
+        # inherits the docstring from interfaces.Dialect.connect
+>       return self.dbapi.connect(*cargs, **cparams)
+
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/default.py:598: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pymysql.connections.Connection object at 0x7fe6d6b8d2b0>
+
+    def __init__(
+        self,
+        *,
+        user=None,  # The first four arguments is based on DB-API 2.0 recommendation.
+        password="",
+        host=None,
+        database=None,
+        unix_socket=None,
+        port=0,
+        charset="",
+        sql_mode=None,
+        read_default_file=None,
+        conv=None,
+        use_unicode=True,
+        client_flag=0,
+        cursorclass=Cursor,
+        init_command=None,
+        connect_timeout=10,
+        read_default_group=None,
+        autocommit=False,
+        local_infile=False,
+        max_allowed_packet=16 * 1024 * 1024,
+        defer_connect=False,
+        auth_plugin_map=None,
+        read_timeout=None,
+        write_timeout=None,
+        bind_address=None,
+        binary_prefix=False,
+        program_name=None,
+        server_public_key=None,
+        ssl=None,
+        ssl_ca=None,
+        ssl_cert=None,
+        ssl_disabled=None,
+        ssl_key=None,
+        ssl_verify_cert=None,
+        ssl_verify_identity=None,
+        compress=None,  # not supported
+        named_pipe=None,  # not supported
+        passwd=None,  # deprecated
+        db=None,  # deprecated
+    ):
+        if db is not None and database is None:
+            # We will raise warining in 2022 or later.
+            # See https://github.com/PyMySQL/PyMySQL/issues/939
+            # warnings.warn("'db' is deprecated, use 'database'", DeprecationWarning, 3)
+            database = db
+        if passwd is not None and not password:
+            # We will raise warining in 2022 or later.
+            # See https://github.com/PyMySQL/PyMySQL/issues/939
+            # warnings.warn(
+            #    "'passwd' is deprecated, use 'password'", DeprecationWarning, 3
+            # )
+            password = passwd
+    
+        if compress or named_pipe:
+            raise NotImplementedError(
+                "compress and named_pipe arguments are not supported"
+            )
+    
+        self._local_infile = bool(local_infile)
+        if self._local_infile:
+            client_flag |= CLIENT.LOCAL_FILES
+    
+        if read_default_group and not read_default_file:
+            if sys.platform.startswith("win"):
+                read_default_file = "c:\\my.ini"
+            else:
+                read_default_file = "/etc/my.cnf"
+    
+        if read_default_file:
+            if not read_default_group:
+                read_default_group = "client"
+    
+            cfg = Parser()
+            cfg.read(os.path.expanduser(read_default_file))
+    
+            def _config(key, arg):
+                if arg:
+                    return arg
+                try:
+                    return cfg.get(read_default_group, key)
+                except Exception:
+                    return arg
+    
+            user = _config("user", user)
+            password = _config("password", password)
+            host = _config("host", host)
+            database = _config("database", database)
+            unix_socket = _config("socket", unix_socket)
+            port = int(_config("port", port))
+            bind_address = _config("bind-address", bind_address)
+            charset = _config("default-character-set", charset)
+            if not ssl:
+                ssl = {}
+            if isinstance(ssl, dict):
+                for key in ["ca", "capath", "cert", "key", "cipher"]:
+                    value = _config("ssl-" + key, ssl.get(key))
+                    if value:
+                        ssl[key] = value
+    
+        self.ssl = False
+        if not ssl_disabled:
+            if ssl_ca or ssl_cert or ssl_key or ssl_verify_cert or ssl_verify_identity:
+                ssl = {
+                    "ca": ssl_ca,
+                    "check_hostname": bool(ssl_verify_identity),
+                    "verify_mode": ssl_verify_cert
+                    if ssl_verify_cert is not None
+                    else False,
+                }
+                if ssl_cert is not None:
+                    ssl["cert"] = ssl_cert
+                if ssl_key is not None:
+                    ssl["key"] = ssl_key
+            if ssl:
+                if not SSL_ENABLED:
+                    raise NotImplementedError("ssl module not found")
+                self.ssl = True
+                client_flag |= CLIENT.SSL
+                self.ctx = self._create_ssl_ctx(ssl)
+    
+        self.host = host or "localhost"
+        self.port = port or 3306
+        if type(self.port) is not int:
+            raise ValueError("port should be of type int")
+        self.user = user or DEFAULT_USER
+        self.password = password or b""
+        if isinstance(self.password, str):
+            self.password = self.password.encode("latin1")
+        self.db = database
+        self.unix_socket = unix_socket
+        self.bind_address = bind_address
+        if not (0 < connect_timeout <= 31536000):
+            raise ValueError("connect_timeout should be >0 and <=31536000")
+        self.connect_timeout = connect_timeout or None
+        if read_timeout is not None and read_timeout <= 0:
+            raise ValueError("read_timeout should be > 0")
+        self._read_timeout = read_timeout
+        if write_timeout is not None and write_timeout <= 0:
+            raise ValueError("write_timeout should be > 0")
+        self._write_timeout = write_timeout
+    
+        self.charset = charset or DEFAULT_CHARSET
+        self.use_unicode = use_unicode
+    
+        self.encoding = charset_by_name(self.charset).encoding
+    
+        client_flag |= CLIENT.CAPABILITIES
+        if self.db:
+            client_flag |= CLIENT.CONNECT_WITH_DB
+    
+        self.client_flag = client_flag
+    
+        self.cursorclass = cursorclass
+    
+        self._result = None
+        self._affected_rows = 0
+        self.host_info = "Not connected"
+    
+        # specified autocommit mode. None means use server default.
+        self.autocommit_mode = autocommit
+    
+        if conv is None:
+            conv = converters.conversions
+    
+        # Need for MySQLdb compatibility.
+        self.encoders = {k: v for (k, v) in conv.items() if type(k) is not int}
+        self.decoders = {k: v for (k, v) in conv.items() if type(k) is int}
+        self.sql_mode = sql_mode
+        self.init_command = init_command
+        self.max_allowed_packet = max_allowed_packet
+        self._auth_plugin_map = auth_plugin_map or {}
+        self._binary_prefix = binary_prefix
+        self.server_public_key = server_public_key
+    
+        self._connect_attrs = {
+            "_client_name": "pymysql",
+            "_pid": str(os.getpid()),
+            "_client_version": VERSION_STRING,
+        }
+    
+        if program_name:
+            self._connect_attrs["program_name"] = program_name
+    
+        if defer_connect:
+            self._sock = None
+        else:
+>           self.connect()
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:353: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pymysql.connections.Connection object at 0x7fe6d6b8d2b0>
+sock = <socket.socket [closed] fd=-1, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=6>
+
+    def connect(self, sock=None):
+        self._closed = False
+        try:
+            if sock is None:
+                if self.unix_socket:
+                    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                    sock.settimeout(self.connect_timeout)
+                    sock.connect(self.unix_socket)
+                    self.host_info = "Localhost via UNIX socket"
+                    self._secure = True
+                    if DEBUG:
+                        print("connected using unix_socket")
+                else:
+                    kwargs = {}
+                    if self.bind_address is not None:
+                        kwargs["source_address"] = (self.bind_address, 0)
+                    while True:
+                        try:
+                            sock = socket.create_connection(
+                                (self.host, self.port), self.connect_timeout, **kwargs
+                            )
+                            break
+                        except (OSError, IOError) as e:
+                            if e.errno == errno.EINTR:
+                                continue
+                            raise
+                    self.host_info = "socket %s:%d" % (self.host, self.port)
+                    if DEBUG:
+                        print("connected using socket")
+                    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+                sock.settimeout(None)
+    
+            self._sock = sock
+            self._rfile = sock.makefile("rb")
+            self._next_seq_id = 0
+    
+            self._get_server_information()
+>           self._request_authentication()
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:633: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pymysql.connections.Connection object at 0x7fe6d6b8d2b0>
+
+    def _request_authentication(self):
+        # https://dev.mysql.com/doc/internals/en/connection-phase-packets.html#packet-Protocol::HandshakeResponse
+        if int(self.server_version.split(".", 1)[0]) >= 5:
+            self.client_flag |= CLIENT.MULTI_RESULTS
+    
+        if self.user is None:
+            raise ValueError("Did not specify a username")
+    
+        charset_id = charset_by_name(self.charset).id
+        if isinstance(self.user, str):
+            self.user = self.user.encode(self.encoding)
+    
+        data_init = struct.pack(
+            "<iIB23s", self.client_flag, MAX_PACKET_LEN, charset_id, b""
+        )
+    
+        if self.ssl and self.server_capabilities & CLIENT.SSL:
+            self.write_packet(data_init)
+    
+            self._sock = self.ctx.wrap_socket(self._sock, server_hostname=self.host)
+            self._rfile = self._sock.makefile("rb")
+            self._secure = True
+    
+        data = data_init + self.user + b"\0"
+    
+        authresp = b""
+        plugin_name = None
+    
+        if self._auth_plugin_name == "":
+            plugin_name = b""
+            authresp = _auth.scramble_native_password(self.password, self.salt)
+        elif self._auth_plugin_name == "mysql_native_password":
+            plugin_name = b"mysql_native_password"
+            authresp = _auth.scramble_native_password(self.password, self.salt)
+        elif self._auth_plugin_name == "caching_sha2_password":
+            plugin_name = b"caching_sha2_password"
+            if self.password:
+                if DEBUG:
+                    print("caching_sha2: trying fast path")
+                authresp = _auth.scramble_caching_sha2(self.password, self.salt)
+            else:
+                if DEBUG:
+                    print("caching_sha2: empty password")
+        elif self._auth_plugin_name == "sha256_password":
+            plugin_name = b"sha256_password"
+            if self.ssl and self.server_capabilities & CLIENT.SSL:
+                authresp = self.password + b"\0"
+            elif self.password:
+                authresp = b"\1"  # request public key
+            else:
+                authresp = b"\0"  # empty password
+    
+        if self.server_capabilities & CLIENT.PLUGIN_AUTH_LENENC_CLIENT_DATA:
+            data += _lenenc_int(len(authresp)) + authresp
+        elif self.server_capabilities & CLIENT.SECURE_CONNECTION:
+            data += struct.pack("B", len(authresp)) + authresp
+        else:  # pragma: no cover - not testing against servers without secure auth (>=5.0)
+            data += authresp + b"\0"
+    
+        if self.db and self.server_capabilities & CLIENT.CONNECT_WITH_DB:
+            if isinstance(self.db, str):
+                self.db = self.db.encode(self.encoding)
+            data += self.db + b"\0"
+    
+        if self.server_capabilities & CLIENT.PLUGIN_AUTH:
+            data += (plugin_name or b"") + b"\0"
+    
+        if self.server_capabilities & CLIENT.CONNECT_ATTRS:
+            connect_attrs = b""
+            for k, v in self._connect_attrs.items():
+                k = k.encode("utf-8")
+                connect_attrs += struct.pack("B", len(k)) + k
+                v = v.encode("utf-8")
+                connect_attrs += struct.pack("B", len(v)) + v
+            data += struct.pack("B", len(connect_attrs)) + connect_attrs
+    
+        self.write_packet(data)
+>       auth_packet = self._read_packet()
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:907: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pymysql.connections.Connection object at 0x7fe6d6b8d2b0>
+packet_type = <class 'pymysql.protocol.MysqlPacket'>
+
+    def _read_packet(self, packet_type=MysqlPacket):
+        """Read an entire "mysql packet" in its entirety from the network
+            and return a MysqlPacket type that represents the results.
+    
+            :raise OperationalError: If the connection to the MySQL server is lost.
+            :raise InternalError: If the packet sequence number is wrong.
+            """
+        buff = bytearray()
+        while True:
+            packet_header = self._read_bytes(4)
+            # if DEBUG: dump_packet(packet_header)
+    
+            btrl, btrh, packet_number = struct.unpack("<HBB", packet_header)
+            bytes_to_read = btrl + (btrh << 16)
+            if packet_number != self._next_seq_id:
+                self._force_close()
+                if packet_number == 0:
+                    # MariaDB sends error packet with seqno==0 when shutdown
+                    raise err.OperationalError(
+                        CR.CR_SERVER_LOST,
+                        "Lost connection to MySQL server during query",
+                    )
+                raise err.InternalError(
+                    "Packet sequence number wrong - got %d expected %d"
+                    % (packet_number, self._next_seq_id)
+                )
+            self._next_seq_id = (self._next_seq_id + 1) % 256
+    
+            recv_data = self._read_bytes(bytes_to_read)
+            if DEBUG:
+                dump_packet(recv_data)
+            buff += recv_data
+            # https://dev.mysql.com/doc/internals/en/sending-more-than-16mbyte.html
+            if bytes_to_read == 0xFFFFFF:
+                continue
+            if bytes_to_read < MAX_PACKET_LEN:
+                break
+    
+        packet = packet_type(bytes(buff), self.encoding)
+        if packet.is_error_packet():
+            if self._result is not None and self._result.unbuffered_active is True:
+                self._result.unbuffered_active = False
+>           packet.raise_for_error()
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:725: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pymysql.protocol.MysqlPacket object at 0x7fe6d6b8d860>
+
+    def raise_for_error(self):
+        self.rewind()
+        self.advance(1)  # field_count == error (we already know that)
+        errno = self.read_uint16()
+        if DEBUG:
+            print("errno =", errno)
+>       err.raise_mysql_exception(self._data)
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/protocol.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+data = b"\xff\xa2\x06#28000Access denied for user 'user'@'localhost'"
+
+    def raise_mysql_exception(data):
+        errno = struct.unpack("<h", data[1:3])[0]
+        errval = data[9:].decode("utf-8", "replace")
+        errorclass = error_map.get(errno)
+        if errorclass is None:
+            errorclass = InternalError if errno < 1000 else OperationalError
+>       raise errorclass(errno, errval)
+E       pymysql.err.OperationalError: (1698, "Access denied for user 'user'@'localhost'")
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/err.py:143: OperationalError
+
+The above exception was the direct cause of the following exception:
+
+    @pytest.fixture
+    def app():
+        app = create_app()
+        app.config['TESTING'] = True
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://user:password@localhost/test_db'
+    
+        with app.app_context():
+>           db.create_all()  # Créer les tables dans la base de données de test
+
+test_api.py:13: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../anaconda3/lib/python3.6/site-packages/flask_sqlalchemy/__init__.py:1094: in create_all
+    self._execute_for_all_tables(app, bind, 'create_all')
+../../../anaconda3/lib/python3.6/site-packages/flask_sqlalchemy/__init__.py:1086: in _execute_for_all_tables
+    op(bind=self.get_engine(app, bind), **extra)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/sql/schema.py:4931: in create_all
+    ddl.SchemaGenerator, self, checkfirst=checkfirst, tables=tables
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3237: in _run_ddl_visitor
+    with self.begin() as conn:
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3153: in begin
+    conn = self.connect(close_with_result=close_with_result)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3325: in connect
+    return self._connection_cls(self, close_with_result=close_with_result)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:96: in __init__
+    else engine.raw_connection()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3404: in raw_connection
+    return self._wrap_pool_connect(self.pool.connect, _connection)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3375: in _wrap_pool_connect
+    e, dialect, self
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:2209: in _handle_dbapi_exception_noconnection
+    sqlalchemy_exception, with_traceback=exc_info[2], from_=e
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/compat.py:211: in raise_
+    raise exception
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/base.py:3371: in _wrap_pool_connect
+    return fn()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:327: in connect
+    return _ConnectionFairy._checkout(self)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:894: in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:493: in checkout
+    rec = pool._do_get()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/impl.py:146: in _do_get
+    self._dec_overflow()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/langhelpers.py:72: in __exit__
+    with_traceback=exc_tb,
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/compat.py:211: in raise_
+    raise exception
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/impl.py:143: in _do_get
+    return self._create_connection()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:273: in _create_connection
+    return _ConnectionRecord(self)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:388: in __init__
+    self.__connect()
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:691: in __connect
+    pool.logger.debug("Error on connect(): %s", e)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/langhelpers.py:72: in __exit__
+    with_traceback=exc_tb,
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/util/compat.py:211: in raise_
+    raise exception
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/pool/base.py:686: in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/create.py:574: in connect
+    return dialect.connect(*cargs, **cparams)
+../../../anaconda3/lib/python3.6/site-packages/sqlalchemy/engine/default.py:598: in connect
+    return self.dbapi.connect(*cargs, **cparams)
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:353: in __init__
+    self.connect()
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:633: in connect
+    self._request_authentication()
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:907: in _request_authentication
+    auth_packet = self._read_packet()
+../../../anaconda3/lib/python3.6/site-packages/pymysql/connections.py:725: in _read_packet
+    packet.raise_for_error()
+../../../anaconda3/lib/python3.6/site-packages/pymysql/protocol.py:221: in raise_for_error
+    err.raise_mysql_exception(self._data)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+data = b"\xff\xa2\x06#28000Access denied for user 'user'@'localhost'"
+
+    def raise_mysql_exception(data):
+        errno = struct.unpack("<h", data[1:3])[0]
+        errval = data[9:].decode("utf-8", "replace")
+        errorclass = error_map.get(errno)
+        if errorclass is None:
+            errorclass = InternalError if errno < 1000 else OperationalError
+>       raise errorclass(errno, errval)
+E       sqlalchemy.exc.OperationalError: (pymysql.err.OperationalError) (1698, "Access denied for user 'user'@'localhost'")
+E       (Background on this error at: https://sqlalche.me/e/14/e3q8)
+
+../../../anaconda3/lib/python3.6/site-packages/pymysql/err.py:143: OperationalError
+=========================== 4 error in 2.71 seconds ============================
