@@ -2,7 +2,6 @@ import pytest
 from app import create_app, db
 from app.models import Task
 
-
 @pytest.fixture
 def app():
     app = create_app()
